@@ -2,15 +2,18 @@ mod context;
 #[allow(non_upper_case_globals)]
 mod sec_sys;
 
+use std::ffi::c_void;
 use super::Error;
 use sec_sys::*;
 
 pub(crate) struct Verifier(SecCodeKind);
+
 pub(crate) use context::Context;
 
 #[derive(Debug)]
 enum SecCodeKind {
-    Static(SecStaticCode), // Static code is created for files on disk
+    Static(SecStaticCode),
+    // Static code is created for files on disk
     Dynamic(SecCode),      // Regular code is created for a guest pid
 }
 
@@ -165,9 +168,10 @@ impl From<CFErrorRef> for Error {
             let err = CFError::wrap_under_get_rule(err);
             Error::CFError(format!(
                 "{:?}",
-                CFDictionary::wrap_under_create_rule(CFErrorCopyUserInfo(
-                    err.as_concrete_TypeRef()
-                )),
+                CFDictionary::<*const c_void, *const c_void>::wrap_under_create_rule
+                    (CFErrorCopyUserInfo(
+                        err.as_concrete_TypeRef()
+                    )),
             ))
         }
     }
